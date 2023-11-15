@@ -1,29 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState, useContext } from "react";
+import { useQuery } from "@tanstack/react-query";
+import AdoptedPetContext from "./AdoptedPetContext";
 import Results from "./Results";
 import useBreedList from "./useBreedList";
-
+import fetchSearch from "./fetchSearch";
 const ANIMALS = ["bird", "cat", "dog", "rabbit", "reptile"];
+// uncontrolled form, we are no longer tracking breed and location
 const SearchParams = () => {
-  const [location, setLocation] = useState("");
+  const [requestParams, setRequestParams] = useState({
+    location: "",
+    animal: "",
+    breed: "",
+  });
   const [animal, setAnimal] = useState("");
-  const [breed, setBreed] = useState("");
-  const [pets, setPets] = useState([]);
+
   const [breeds] = useBreedList(animal);
 
-  useEffect(() => {
-    requestPets();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const [adoptedPet] = useContext(AdoptedPetContext);
 
-  // It's defined inside useEffect so it's not recreated on every render cycle.
-  async function requestPets() {
-    const res = await fetch(
-      `https://pets-v2.dev-apis.com/pets?animal=${animal}&location=${location}&breed=${breed}`
-    );
-
-    const json = await res.json();
-
-    setPets(json.pets);
-  }
+  const results = useQuery(["search", requestParams], fetchSearch);
+  const pets = results?.data?.pets ?? [];
 
   return (
     <div className="search-params">
@@ -31,24 +27,29 @@ const SearchParams = () => {
         onSubmit={(e) => {
           // prevents the form from literly submitting
           e.preventDefault();
-          requestPets();
+          const formData = new FormData(e.target);
+          const obj = {
+            animal: formData.get("animal") ?? "",
+            breed: formData.get("breed") ?? "",
+            location: formData.get("location") ?? "",
+          };
+          setRequestParams(obj);
         }}
       >
+        {adoptedPet ? (
+          <div className="pet image-container">
+            <img src={adoptedPet.images[0]} alt={adoptedPet.name} />
+          </div>
+        ) : null}
         <label htmlFor="location">
           Location
-          <input
-            onChange={(e) => setLocation(e.target.value)}
-            id="location"
-            value={location}
-            placeholder="Location"
-          />
+          <input name="location" id="location" placeholder="Location" />
         </label>
         <label htmlFor="animal">
           Animal
           <select
             onChange={(e) => {
               setAnimal(e.target.value);
-              setBreed("");
             }}
             id="animal"
             value={animal}
@@ -61,12 +62,7 @@ const SearchParams = () => {
         </label>
         <label htmlFor="breed">
           Breed
-          <select
-            onChange={(e) => setBreed(e.target.value)}
-            id="breed"
-            value={breed}
-            disabled={breeds.length === 0}
-          >
+          <select id="breed" name="breed" disabled={breeds.length === 0}>
             <option />
             {breeds.map((breed) => (
               <option key={breed}>{breed}</option>
