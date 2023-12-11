@@ -1,6 +1,10 @@
-import { Component } from "react";
+import { Component, MouseEvent } from "react";
 
-class Carousel extends Component {
+interface IProps {
+  images: string[];
+}
+
+class Carousel extends Component<IProps> {
   state = {
     active: 0,
   };
@@ -11,10 +15,15 @@ class Carousel extends Component {
 
   // when we are invoking arrow function it does not creates new scope
 
-  handleIndexClick = (e) => {
-    this.setState({
-      active: +e.target.dataset.index, // make string to number with +
-    });
+  handleIndexClick = (e: MouseEvent<HTMLElement>) => {
+    if(!(e.target instanceof HTMLElement)) {
+      return;
+    }
+    if(e.target.dataset.index) {
+      this.setState({
+        active: +e.target.dataset.index, // make string to number with +
+      });
+    }
   };
 
   render() {

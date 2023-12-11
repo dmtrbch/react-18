@@ -1,15 +1,15 @@
 //The componentDidCatch function is only available to Class Components
-import { Component } from "react";
+import { Component, ErrorInfo, ReactElement } from "react";
 import { Link } from "react-router-dom";
 
-class ErrorBoundary extends Component {
+class ErrorBoundary extends Component<{ children: ReactElement }> {
   state = { hasError: false };
   // static methods are called directly on the class
   static getDerivedStateFromError() {
     return { hasError: true };
   }
 
-  componentDidCatch(error, info) {
+  componentDidCatch(error: Error, info: ErrorInfo) {
     // typically you would log this to something like TrackJS or NewRelic
     console.error("ErrorBoundary component caught an error", error, info);
   }
