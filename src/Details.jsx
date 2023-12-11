@@ -1,11 +1,15 @@
-import { useState, useContext } from "react";
+import { useState, lazy, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import AdoptedPetContext from "./AdoptedPetContext";
 import ErrorBoundary from "./ErrorBoundary";
 import Carousel from "./Carousel";
 import fetchPet from "./fetchPet";
-import Modal from "./Modal";
+// import Modal from "./Modal";
+
+// We don't need to load modal when Details page is loaded, instead load it when it is requested
+// this is not needed, Modal is very lightweight, it is good practice to code split 10s of killobytes
+const Modal = lazy(() => import("./Modal"));
 
 const Details = () => {
   const [showModal, setShowModal] = useState(false);
