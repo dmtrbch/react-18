@@ -16,10 +16,10 @@ class Carousel extends Component<IProps> {
   // when we are invoking arrow function it does not creates new scope
 
   handleIndexClick = (e: MouseEvent<HTMLElement>) => {
-    if(!(e.target instanceof HTMLElement)) {
+    if (!(e.target instanceof HTMLElement)) {
       return;
     }
-    if(e.target.dataset.index) {
+    if (e.target.dataset.index) {
       this.setState({
         active: +e.target.dataset.index, // make string to number with +
       });
@@ -32,7 +32,7 @@ class Carousel extends Component<IProps> {
 
     return (
       <div className="carousel">
-        <img src={images[active]} alt="animal hero" />
+        <img data-testid="hero" src={images[active]} alt="animal hero" />
         <div className="carousel-smaller">
           {images.map((photo, index) => (
             // eslint-disable-next-line
@@ -41,6 +41,7 @@ class Carousel extends Component<IProps> {
               data-index={index}
               key={photo}
               src={photo}
+              data-testid={`thumbnail${index}`}
               className={index === active ? "active" : ""}
               alt="animal thumbnail"
             />
