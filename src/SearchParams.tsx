@@ -1,36 +1,43 @@
 import {
   useState,
-  useContext,
   useDeferredValue,
   useMemo,
   useTransition,
 } from "react";
-import { useQuery } from "@tanstack/react-query";
-import AdoptedPetContext from "./AdoptedPetContext";
+import { useSelector, useDispatch } from "react-redux";
+import { all } from "./searchParamsSlice";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+//@ts-ignore
+import { useSearchQuery } from "./petApiService"
 import Results from "./Results";
 import useBreedList from "./useBreedList";
-import fetchSearch from "./fetchSearch";
 import { Animal } from "./APIResponsesTypes";
 const ANIMALS: Animal[] = ["bird", "cat", "dog", "rabbit", "reptile"];
 // uncontrolled form, we are no longer tracking breed and location
 const SearchParams = () => {
-  const [requestParams, setRequestParams] = useState({
-    location: "",
-    animal: "" as Animal,
-    breed: "",
-  });
   const [animal, setAnimal] = useState("" as Animal);
 
   const [breeds] = useBreedList(animal);
 
-  const [adoptedPet] = useContext(AdoptedPetContext);
+  const dispatch = useDispatch();
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
+  const adoptedPet = useSelector((state:any) => state.adoptedPet.value);
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
+  const searchParams = useSelector((state: any) => state.searchParams.value);
 
   const [isPending, startTranstition] = useTransition();
 
-  const results = useQuery(["search", requestParams], fetchSearch);
-  const pets = results?.data?.pets ?? [];
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  let { data: pets } = useSearchQuery(searchParams);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  pets = pets ?? [];
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const deferredPets = useDeferredValue(pets);
   const renderedPets = useMemo(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     () => <Results pets={deferredPets} />,
     [deferredPets]
   );
@@ -49,7 +56,7 @@ const SearchParams = () => {
           };
           startTranstition(() => {
             // whatever comes here low priority, can be interrupted
-            setRequestParams(obj);
+            dispatch(all(obj));
           });
         }}
       >

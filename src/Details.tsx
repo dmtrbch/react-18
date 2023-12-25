@@ -1,10 +1,12 @@
-import { useState, lazy, useContext } from "react";
+import { useState, lazy } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import AdoptedPetContext from "./AdoptedPetContext";
+import { useDispatch } from "react-redux";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+//@ts-ignore
+import { useGetPetQuery } from "./petApiService";
+import { adopt } from "./adoptedPetSlice";
 import ErrorBoundary from "./ErrorBoundary";
 import Carousel from "./Carousel";
-import fetchPet from "./fetchPet";
 // import Modal from "./Modal";
 
 // We don't need to load modal when Details page is loaded, instead load it when it is requested
@@ -18,21 +20,21 @@ const Details = () => {
     throw new Error('why did you not give me an id?!!! I wanted an id. I have no id.');
   }
   const [showModal, setShowModal] = useState(false);
-  const navigate = useNavigate();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, setAdoptedPet] = useContext(AdoptedPetContext);
+  const navigate = useNavigate(); 
   // id you don't have details/id in you cache, run fetchPet
-  const results = useQuery(["details", id], fetchPet);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+  const { isLoading, data: pet } = useGetPetQuery(id);
+
+  const dispatch = useDispatch()
+
   // isLoading is for the first load. isFetching is for refetching
-  if (results.isLoading) {
+  if (isLoading) {
     return (
       <div className="loading-pane">
         <h2 className="loader">🐚 </h2>
       </div>
     );
   }
-
-  const pet = results?.data?.pets[0];
   if (!pet) {
     throw new Error("no pet lol");
   }
@@ -53,7 +55,7 @@ const Details = () => {
                 <div className="buttons">
                   <button
                     onClick={() => {
-                      setAdoptedPet(pet);
+                      dispatch(adopt(pet));
                       navigate("/");
                     }}
                   >

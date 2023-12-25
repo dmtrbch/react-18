@@ -1,9 +1,9 @@
-import { useState, lazy, Suspense } from "react";
+import { lazy, Suspense } from "react";
+import { Provider } from "react-redux";
+import store from "./store.js"
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import AdoptedPetContext from "./AdoptedPetContext";
-import { Pet } from "./APIResponsesTypes";
 
 // Dynamic import for ES6 Modules
 // This cmomponents won't be loaded until their route is loaded
@@ -31,10 +31,9 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
-  const adoptedPet = useState(null as Pet | null);
   return (
     <BrowserRouter>
-      <AdoptedPetContext.Provider value={adoptedPet}>
+      <Provider store={store}>
         <QueryClientProvider client={queryClient}>
           <Suspense
             fallback={
@@ -52,7 +51,7 @@ const App = () => {
             </Routes>
           </Suspense>
         </QueryClientProvider>
-      </AdoptedPetContext.Provider>
+      </Provider>
     </BrowserRouter>
   );
 };
@@ -63,3 +62,8 @@ if (!container) {
 }
 const root = createRoot(container);
 root.render(<App />);
+
+// The point of using Redux is because it's extremely testable
+// and debuggable
+
+// Redux is like miniature database

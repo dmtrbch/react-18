@@ -1,47 +1,21 @@
-// import { useState, useEffect } from "react";
-import { QueryStatus, useQuery } from "@tanstack/react-query";
-import fetchBreedList from "./fetchBreedList";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+//@ts-ignore
+import { useGetBreedsQuery } from "./petApiService";
 import { Animal } from "./APIResponsesTypes";
 
 // const localCache = {};
 
 export default function useBreedList(animal: Animal) {
-  const results = useQuery(["breeds", animal], fetchBreedList);
-  return [results?.data?.breeds ?? [], results.status] as [
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const { data: breeds, isLoading } = useGetBreedsQuery(animal, {
+    skip: !animal // don't call the api if you don't have animal
+  });
+
+  if(!animal) {
+    return [[], 'loaded'];
+  }
+  return [breeds ?? [], isLoading ? "loading": "loaded"] as [
     string[],
-    QueryStatus
+    string
   ];
-  // const [breedList, setBreedList] = useState([]);
-  // const [status, setStatus] = useState("unloaded");
-
-  // // when does this effect re-run?
-  // // when animal changes
-  // useEffect(() => {
-  //   if (!animal) {
-  //     setBreedList([]);
-  //   } else if (localCache[animal]) {
-  //     setBreedList(localCache[animal]);
-  //   } else {
-  //     requestBreedList();
-  //   }
-
-  //   // if we wanna do async await inside an effect, we have to make async function inside of the effect
-  //   // all coming as part of one effect, atmoically what we want to happen after every single time this rerenders
-  //   async function requestBreedList() {
-  //     setBreedList([]);
-  //     setStatus("loading");
-
-  //     const res = await fetch(
-  //       `https://pets-v2.dev-apis.com/breeds?animal=${animal}`
-  //     );
-
-  //     const json = await res.json();
-
-  //     localCache[animal] = json.breeds || [];
-  //     setBreedList(localCache[animal]);
-  //     setStatus("loaded");
-  //   }
-  // }, [animal]);
-
-  // return [breedList, status];
 }
